@@ -1,8 +1,8 @@
 class UsersController < ApplicationController
+  before_action :validate_app_token, only: [:generate_otp, :authenticate_otp, :create]
+  skip_before_filter :validate_api_token, only: [:generate_otp, :authenticate_otp]
   before_action :set_user_service, only: [:show, :update, :create, :generate_otp, :authenticate_otp]
   before_action :set_user, only: [:show, :update]
-  skip_before_filter :validate_api_token, only: [:generate_otp, :authenticate_otp]
-  before_action :validate_app_token, only: :create
 
   # GET /users
   def index
@@ -80,6 +80,8 @@ class UsersController < ApplicationController
     end
 
     def validate_app_token
-      params[:app_token] == ENV['APP_KEY']
+      if !params[:appkey].eql?(ENV['APP_KEY'])
+        return(render(json: bad_request_json(message: "invalid request"), status: :bad_request))
+      end
     end
 end

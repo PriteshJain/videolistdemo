@@ -30,9 +30,8 @@ class UserService < BaseService
 	def authenticate_otp(_params)
 		self.params = _params
 		user = User.where(mobile_no: self.params[:mobile_no]).first
-		if user && user.active?
-			user.authenticate_otp(self.params[:otp], drift: 5)
-			if user.authenticate_otp(self.params[:otp], drift: 5)
+		if user && !user.active?
+			if user.authenticate_otp(self.params[:otp], drift: 300)
 				user.active = true
 				user.save
 			end
@@ -58,7 +57,7 @@ class UserService < BaseService
 	private
 	def send_otp(user)
 		p = Plivo::RestAPI.new(ENV['PLIVIO_AUTH_ID'], ENV['PLIVIO_AUTH_TOKEN'])
-		message = "Your VideoList verification code is #{user.otp_code}"
+		message = "Your VideoList verification code is #{user.otp_code(drift: 5)}"
 		sms_params = {
 			'src' => ENV['PLIVIO_SRC_MOBILE'], # Sender's phone number with country code
 			'dst' => user.mobile_no, # Receiver's phone Number with country code
