@@ -45,7 +45,7 @@ class UsersController < ApplicationController
 
   def authenticate_otp
     @user = @user_service.authenticate_otp(signin_params)
-    if @user.active?
+    if @user && @user.active?
       render 'show.json'
     else
       render json: bad_request_json(message: 'OTP is invalid'), status: :bad_request

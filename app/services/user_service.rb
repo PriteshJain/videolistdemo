@@ -30,13 +30,15 @@ class UserService < BaseService
 	def authenticate_otp(_params)
 		self.params = _params
 		user = User.where(mobile_no: self.params[:mobile_no]).first
-		if user && !user.active?
-			if user.authenticate_otp(self.params[:otp], drift: 300)
+		if user && user.authenticate_otp(self.params[:otp], drift: 300)
+			unless user.active?
 				user.active = true
 				user.save
 			end
+			return user
+		else
+			return nil
 		end
-		return user
 	end
 
 	def regenerate_otp
